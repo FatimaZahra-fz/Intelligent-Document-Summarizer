@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>NOVA | Intelligent Document Summarizer</title>
+    <!-- Google Fonts: Modern, Clean, Professional -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap"
+        rel="stylesheet">
+    <!-- Font Awesome 6 (free icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* ===== GLOBAL RESET & INNOVATIVE DESIGN SYSTEM ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at 20% 30%, #0a0c10 0%, #030507 100%);
+            color: #f0f3fa;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* animated grain / noise texture for depth */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='1' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* modern glassmorphism + floating orbs */
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 2rem 2rem 4rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Unique glow header */
+        h1 {
+            font-size: 3.4rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #FFFFFF 0%, #B3E5FF 40%, #5BC0FF 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 5px rgba(0, 255, 255, 0.1);
+            margin-bottom: 0.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        h1 i {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 12px;
+            border-radius: 40px;
+            font-size: 2rem;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Subtle tagline */
+        .sub {
+            text-align: center;
+            color: #9aaebf;
+            margin-bottom: 3rem;
+            font-weight: 400;
+            letter-spacing: 0.3px;
+            border-bottom: 1px dashed rgba(91, 192, 255, 0.3);
+            display: inline-block;
+            width: auto;
+            padding-bottom: 8px;
+        }
+
+        /* UPLOAD ZONE — futuristic & interactive */
+        .upload-box {
+            background: rgba(12, 20, 28, 0.65);
+            backdrop-filter: blur(18px);
+            border-radius: 48px;
+            border: 1px solid rgba(91, 192, 255, 0.25);
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            width: 100%;
+            max-width: 680px;
+            margin: 0 auto 2rem auto;
+            padding: 2rem 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .upload-box:hover {
+            border-color: rgba(91, 192, 255, 0.6);
+            box-shadow: 0 30px 50px -18px #00c9ff33;
+        }
+
+        /* custom file input styling */
+        .file-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .file-label {
+            background: rgba(25, 35, 45, 0.9);
+            border: 1px dashed #5bc0ff;
+            border-radius: 60px;
+            padding: 12px 28px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.25s;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.95rem;
+            backdrop-filter: blur(4px);
+        }
+
+        .file-label i {
+            font-size: 1.3rem;
+            color: #5bc0ff;
+        }
+
+        .file-label:hover {
+            background: #1e2f3c;
+            border-color: #8dd0ff;
+            transform: translateY(-2px);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        #fileName {
+            font-size: 0.85rem;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 8px 16px;
+            border-radius: 40px;
+            color: #b9e2ff;
+            max-width: 240px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Primary CTA button — 3D & premium */
+        .btn-primary {
+            background: linear-gradient(105deg, #0077ff, #00c3ff);
+            border: none;
+            padding: 14px 34px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 8px 20px rgba(0, 195, 255, 0.25);
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: 0.3px;
+        }
+
+        .btn-primary i {
+            font-size: 1.1rem;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 18px 28px -8px #00c9ff66;
+            background: linear-gradient(105deg, #1a88ff, #2acbff);
+        }
+
+        .btn-primary:active {
+            transform: translateY(2px);
+        }
+
+        /* STAT CARDS — glassmorphic with animated counters */
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 50px 0 40px;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            background: rgba(20, 30, 40, 0.5);
+            backdrop-filter: blur(12px);
+            border-radius: 2rem;
+            padding: 1.6rem 2rem;
+            min-width: 180px;
+            text-align: center;
+            border: 1px solid rgba(91, 192, 255, 0.2);
+            transition: all 0.2s;
+            box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.3);
+        }
+
+        .card:hover {
+            border-color: #5bc0ff80;
+            transform: translateY(-5px);
+            background: rgba(30, 45, 58, 0.6);
+        }
+
+        .card h3 {
+            font-weight: 500;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #aad0ff;
+            margin-bottom: 12px;
+        }
+
+        .card p {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(145deg, #f0fcff, #b3e4ff);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            line-height: 1;
+            margin: 0;
+        }
+
+        /* summary box — elegant glass editor style */
+        .summary-box {
+            background: rgba(8, 14, 19, 0.7);
+            backdrop-filter: blur(16px);
+            border-radius: 36px;
+            border: 1px solid rgba(91, 192, 255, 0.3);
+            width: 90%;
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 2rem 2.2rem;
+            font-size: 1.05rem;
+            line-height: 1.65;
+            font-weight: 400;
+            color: #eef5ff;
+            transition: all 0.2s;
+            word-break: break-word;
+            box-shadow: 0 20px 35px -12px black;
+        }
+
+        .summary-box:focus-within {
+            border-color: #5bc0ff;
+            box-shadow: 0 0 0 2px rgba(91, 192, 255, 0.2);
+        }
+
+        /* loading state custom */
+        .loading-spinner {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 8px 24px;
+            border-radius: 60px;
+            font-size: 0.9rem;
+        }
+
+        .lds-ring {
+            display: inline-block;
+            width: 22px;
+            height: 22px;
+        }
+
+        .lds-ring div {
+            box-sizing: border-box;
+            display: block;
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+            border-color: #5bc0ff transparent transparent transparent;
+        }
+
+        @keyframes lds-ring {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* floating background orbs */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.25;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .orb1 {
+            width: 45vw;
+            height: 45vw;
+            background: #1e90ff;
+            top: -10vh;
+            left: -15vw;
+        }
+
+        .orb2 {
+            width: 55vw;
+            height: 55vw;
+            background: #00b4d8;
+            bottom: -20vh;
+            right: -15vw;
+            opacity: 0.2;
+        }
+
+        .orb3 {
+            width: 30vw;
+            height: 30vw;
+            background: #2c5282;
+            top: 40%;
+            left: 60%;
+            opacity: 0.2;
+        }
+
+        /* responsive */
+        @media (max-width: 700px) {
+            .container {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            .card p {
+                font-size: 2rem;
+            }
+
+            .summary-box {
+                padding: 1.5rem;
+                font-size: 0.95rem;
+                width: 95%;
+            }
+
+            .file-wrapper {
+                flex-direction: column;
+            }
+        }
+
+        /* subtle scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0a121c;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #2c6e9e;
+            border-radius: 10px;
+        }
+    </style>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- keep external link but my internal overrides preserve functionality -->
+</head>
+
+<body>
+
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <div class="orb orb3"></div>
+
+    <div class="container">
+        <div style="text-align: center;">
+            <h1>
+                <i class="fas fa-robot"></i>
+                <span>INTELLIGENT SUMMARIZER</span>
+            </h1>
+            <div class="sub">Nova AI · Extract essence from documents with precision</div>
+        </div>
+
+        <div class="upload-box">
+            <div class="file-wrapper">
+                <label for="pdfFile" class="file-label">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <span>Choose PDF</span>
+                </label>
+                <input type="file" id="pdfFile" accept=".pdf">
+                <span id="fileName"><i class="fas fa-file-pdf"></i> No file selected</span>
+                <button class="btn-primary" onclick="uploadFile()">
+                    <i class="fas fa-magic"></i> Generate Summary
+                </button>
+            </div>
+            <div style="font-size: 0.7rem; text-align: center; margin-top: 20px; opacity: 0.6;">
+                <i class="fas fa-shield-alt"></i> Secure & local · PDF up to 10MB
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="card">
+                <h3><i class="fas fa-file-alt"></i> Original Words</h3>
+                <p id="originalCount">0</p>
+            </div>
+            <div class="card">
+                <h3><i class="fas fa-compress-alt"></i> Summary Words</h3>
+                <p id="summaryCount">0</p>
+            </div>
+        </div>
+
+        <div class="summary-box" id="result">
+            <i class="fas fa-feather-alt" style="margin-right: 8px; opacity: 0.7;"></i>
+            Your intelligent summary will blossom here...
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <!-- additional UI-enhancing script that does NOT disturb your backend logic, only UI behavior for file name preview + loading states (non-breaking) -->
+    <script>
+        (function () {
+            // 1. Enhance file input to show filename without touching core upload logic
+            const fileInput = document.getElementById('pdfFile');
+            const fileNameSpan = document.getElementById('fileName');
+            if (fileInput && fileNameSpan) {
+                fileInput.addEventListener('change', function (e) {
+                    if (fileInput.files && fileInput.files.length > 0) {
+                        let name = fileInput.files[0].name;
+                        if (name.length > 28) name = name.substring(0, 25) + '...';
+                        fileNameSpan.innerHTML = `<i class="fas fa-file-pdf"></i> ${name}`;
+                    } else {
+                        fileNameSpan.innerHTML = `<i class="fas fa-file-pdf"></i> No file selected`;
+                    }
+                });
+            }
+
+            // 2. Preserve animation for loading state: Intercept original uploadFile to show loading inside result,
+            // but without breaking the existing logic (just visually enhance). We'll override a safe proxy that calls original
+            // global uploadFile if exists. The summarizer logic remains 100% intact, we just add visual feedback.
+            const originalUploadFunc = window.uploadFile;
+            if (typeof originalUploadFunc === 'function') {
+                window.uploadFile = async function () {
+                    const resultDiv = document.getElementById('result');
+                    const originalContent = resultDiv ? resultDiv.innerHTML : '';
+                    // show loading indicator
+                    if (resultDiv) {
+                        resultDiv.innerHTML = `<div class="loading-spinner"><div class="lds-ring"><div></div></div> <span>Analyzing document & generating summary...</span></div>`;
+                    }
+                    try {
+                        // call the original uploadFile function that holds full summarizer logic
+                        await originalUploadFunc();
+                    } catch (err) {
+                        console.warn("Summarizer error:", err);
+                        if (resultDiv && resultDiv.innerHTML.includes('Analyzing')) {
+                            resultDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Something went wrong. Please check console or file format.`;
+                        }
+                    }
+                    // after summary generation, ensure counts update due to your app.js logic (it updates automatically)
+                    // but we also need to clear loading if it fails to replace? original function will fill result, so we don't override
+                };
+            } else {
+                // fallback: safety if app.js not loaded yet, but will exist
+                console.log("waiting for app.js");
+            }
+
+            // 3. Additional micro-interactions: update stats with subtle animation on count changes (just visual)
+            const origCount = document.getElementById('originalCount');
+            const sumCount = document.getElementById('summaryCount');
+            function animateCountElement(el, newVal) {
+                if (!el) return;
+                let current = parseInt(el.innerText);
+                if (isNaN(current)) current = 0;
+                if (current === newVal) return;
+                el.style.transform = 'scale(1.08)';
+                setTimeout(() => { if (el) el.style.transform = ''; }, 180);
+            }
+            // observe changes using MutationObserver on stats elements (non-intrusive)
+            if (origCount && sumCount) {
+                const observer = new MutationObserver((mutations) => {
+                    mutations.forEach((mut) => {
+                        if (mut.type === 'characterData' || mut.type === 'childList') {
+                            const newOrig = parseInt(origCount.innerText);
+                            const newSum = parseInt(sumCount.innerText);
+                            if (!isNaN(newOrig)) animateCountElement(origCount, newOrig);
+                            if (!isNaN(newSum)) animateCountElement(sumCount, newSum);
+                        }
+                    });
+                });
+                observer.observe(origCount, { childList: true, characterData: true, subtree: true });
+                observer.observe(sumCount, { childList: true, characterData: true, subtree: true });
+            }
+
+            // 4. Add ripple effect to button for modern UI
+            const btns = document.querySelectorAll('.btn-primary');
+            btns.forEach(btn => {
+                btn.addEventListener('click', function (e) {
+                    let x = e.clientX - e.target.getBoundingClientRect().left;
+                    let y = e.clientY - e.target.getBoundingClientRect().top;
+                    let ripple = document.createElement('span');
+                    ripple.style.position = 'absolute';
+                    ripple.style.width = '0px';
+                    ripple.style.height = '0px';
+                    ripple.style.borderRadius = '50%';
+                    ripple.style.background = 'rgba(255,255,255,0.5)';
+                    ripple.style.transform = 'translate(-50%, -50%)';
+                    ripple.style.left = x + 'px';
+                    ripple.style.top = y + 'px';
+                    ripple.style.transition = 'all 0.6s ease';
+                    ripple.style.pointerEvents = 'none';
+                    btn.style.position = 'relative';
+                    btn.style.overflow = 'hidden';
+                    btn.appendChild(ripple);
+                    setTimeout(() => { ripple.style.width = '300px'; ripple.style.height = '300px'; ripple.style.opacity = '0'; }, 10);
+                    setTimeout(() => { ripple.remove(); }, 500);
+                });
+            });
+        })();
+    </script>
+</body>
+
+</html>
